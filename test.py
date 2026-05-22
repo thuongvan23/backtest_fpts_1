@@ -19,11 +19,11 @@ max_days = st.sidebar.number_input("Số ngày tích lũy tối đa", value=9)
 so_ngay_tich_luy = range(int(min_days), int(max_days) + 1)
 
 breakout_days_check = st.sidebar.number_input("Breakout days check", value=3)
-max_chase = st.sidebar.slider("Max chase limit", 1.0, 1.1, 1.04, step=0.01)
+max_chase = st.sidebar.slider("Max chase limit (Chỉ vào khi không bị break quá cao)", 1.0, 1.1, 1.04, step=0.01)
 target = st.sidebar.slider("Target (TP)", 1.0, 2.0, 1.4, step=0.05)
 stoploss = st.sidebar.slider("Stoploss (SL)", 0.8, 1.0, 0.95, step=0.01)
-min_hold_days = st.sidebar.number_input("Min hold days", value=14)
-avoid_duplicate = st.sidebar.number_input("Avoid duplicate days", value=10)
+min_hold_days = st.sidebar.number_input("Min hold days (Thị trường là T+2, số ngày hold tối thiếu)", value=14)
+avoid_duplicate = st.sidebar.number_input("Avoid duplicate days (sau khi vào 1 lệnh thì cách ra để tránh lặp lại) ", value=10)
 
 BACKTEST_CONFIG = {
     "nen_tich_luy": nen_tich_luy,
