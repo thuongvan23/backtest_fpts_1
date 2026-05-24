@@ -42,7 +42,7 @@ def run_backtest(df, stock_name, nen_tich_luy, so_ngay_tich_luy, breakout_days_c
     trades = []
     last_breakout_idx = -1
 
-    for i in range(80, len(df)-10):
+    for i in range(80, len(df)):
         if i <= last_breakout_idx:
             continue
         if df['EMA21'].iloc[i] <= df['EMA65'].iloc[i]:
