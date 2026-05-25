@@ -23,6 +23,7 @@ max_chase = st.sidebar.slider("Max chase limit (Chỉ vào khi không bị break
 target = st.sidebar.slider("Target (TP)", 1.0, 2.0, 1.4, step=0.05)
 stoploss = st.sidebar.slider("Stoploss (SL)", 0.8, 1.0, 0.95, step=0.01)
 min_hold_days = st.sidebar.number_input("Min hold days (Thị trường là T+2, số ngày hold tối thiếu)", value=14)
+max_hold_days = st.sidebar.number_input("Max hold days (quá số ngày này sẽ tự động chốt)", value=25)
 avoid_duplicate = st.sidebar.number_input("Avoid duplicate days (sau khi vào 1 lệnh thì cách ra để tránh lặp lại) ", value=10)
 
 BACKTEST_CONFIG = {
@@ -33,12 +34,13 @@ BACKTEST_CONFIG = {
     "target": target,
     "stoploss": stoploss,
     "min_hold_days": int(min_hold_days),
-    "avoid_duplicate": int(avoid_duplicate)
+    "avoid_duplicate": int(avoid_duplicate),
+    "max_hold_days": int(max_hold_days)
 }
 
 # ==================== LOGIC HÀM BACKTEST ====================
 def run_backtest(df, stock_name, nen_tich_luy, so_ngay_tich_luy, breakout_days_check, 
-                 max_chase, target, stoploss, min_hold_days, avoid_duplicate):
+                 max_chase, target, stoploss, min_hold_days, max_hold_days, avoid_duplicate):
     trades = []
     last_breakout_idx = -1
 
@@ -81,24 +83,40 @@ def run_backtest(df, stock_name, nen_tich_luy, so_ngay_tich_luy, breakout_days_c
                 exit_price = None
                 exit_date = None
 
-                future = df.iloc[breakout_idx + min_hold_days:]
+                # Bắt đầu xét thoát sau min_hold_days
+                start_exit_idx = breakout_idx + min_hold_days
+                
+                # Giới hạn tối đa thời gian nắm giữ
+                end_exit_idx = min(breakout_idx + max_hold_days, len(df) - 1)
+                
+                future = df.iloc[start_exit_idx:end_exit_idx + 1]
+                
                 for j in range(len(future)):
                     row = future.iloc[j]
+                
+                    # Stoploss ưu tiên trước
                     if row['Low'] <= sl:
                         result = "STOPLOSS"
                         exit_price = sl
                         exit_date = future.index[j]
                         break
+                
+                    # Take profit
                     if row['High'] >= tp:
                         result = "TAKE_PROFIT"
                         exit_price = tp
                         exit_date = future.index[j]
                         break
-
+                
+                # Nếu chưa TP/SL tới max_hold_days -> auto chốt
                 if exit_price is None:
-                    exit_price = df.iloc[-1]['Close']
-                    exit_date = pd.Timestamp(df.index[-1])
-                    result = "FORCE_EXIT"
+                
+                    forced_exit_row = df.iloc[end_exit_idx]
+                
+                    exit_price = forced_exit_row['Close']
+                    exit_date = forced_exit_row.name
+                
+                    result = "MAX_HOLD_EXIT"
 
                 trades.append({
                     'Buy Date': df.index[breakout_idx],
