@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 # import mplfinance as mpf
+from datetime import date
 import io
 
 st.set_page_config(page_title="Backtest Strategy System", layout="wide")
@@ -14,8 +15,20 @@ st.set_page_config(page_title="Backtest Strategy System", layout="wide")
 # Giao diện cho phép tinh chỉnh Parameter (giữ default y hệt Colab)
 st.sidebar.header("⚙️ Cấu hình Backtest")
 
-start_date = st.sidebar.date_input("Ngày bắt đầu backtest", value=pd.to_datetime("2000-01-01"))
-end_date = st.sidebar.date_input("Ngày kết thúc backtest", value=pd.to_datetime("today"))
+start_date = st.sidebar.date_input(
+    "Ngày bắt đầu backtest",
+    value=date(2000, 1, 1),
+    min_value=date(1990, 1, 1),
+    max_value=date.today()
+)
+
+end_date = st.sidebar.date_input(
+    "Ngày kết thúc backtest",
+    value=date.today(),
+    min_value=date(1990, 1, 1),
+    max_value=date.today()
+)
+
 start_date = pd.to_datetime(start_date)
 end_date = pd.to_datetime(end_date)
 
