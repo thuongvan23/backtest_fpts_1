@@ -175,8 +175,10 @@ def calculate_statistics(trades_df):
     if len(closed_trades) == 0: return None
 
     closed_trades['Return %'] = ((closed_trades['Exit Price'] - closed_trades['Buy Price']) / closed_trades['Buy Price']) * 100
-    wins = closed_trades[closed_trades['Result'] == 'TAKE_PROFIT']
-    losses = closed_trades[closed_trades['Result'] == 'STOPLOSS']
+    # wins = closed_trades[closed_trades['Result'] == 'TAKE_PROFIT']
+    # losses = closed_trades[closed_trades['Result'] == 'STOPLOSS']
+    wins = closed_trades[closed_trades['Return %'] > 0]
+    losses = closed_trades[closed_trades['Return %'] <= 0]
 
     total_trades = len(closed_trades)
     win_count = len(wins)
