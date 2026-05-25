@@ -59,7 +59,7 @@ min_days = st.sidebar.number_input("Số ngày tích lũy tối thiểu", value=
 max_days = st.sidebar.number_input("Số ngày tích lũy tối đa", value=9)
 so_ngay_tich_luy = range(int(min_days), int(max_days) + 1)
 
-breakout_days_check = st.sidebar.number_input("Breakout days check", value=14)
+breakout_days_check = st.sidebar.number_input("Breakout days check", value=3)
 max_chase = st.sidebar.slider("Max chase limit (Chỉ vào khi không bị break quá cao)", 1.0, 1.1, 1.04, step=0.01)
 target = st.sidebar.slider("Target (TP)", 1.0, 2.0, 1.4, step=0.05)
 stoploss = st.sidebar.slider("Stoploss (SL)", 0.8, 1.0, 0.95, step=0.01)
