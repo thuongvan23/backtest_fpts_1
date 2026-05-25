@@ -9,11 +9,29 @@ import io
 st.set_page_config(page_title="Backtest Strategy System", layout="wide")
 
 # --- KHỞI TẠO CẤU HÌNH & HẰNG SỐ CHUẨN TỪ COLAB ---
-INITIAL_CAPITAL = 500_000_000
-MAX_POSITION_SIZE = 100_000_000
+# INITIAL_CAPITAL = 500_000_000
+# MAX_POSITION_SIZE = 100_000_000
 
 # Giao diện cho phép tinh chỉnh Parameter (giữ default y hệt Colab)
 st.sidebar.header("⚙️ Cấu hình Backtest")
+
+INITIAL_CAPITAL = st.sidebar.number_input(
+    "Initial Capital",
+    min_value=0,
+    value=500_000_000,
+    step=100_000_000,
+    format="%d"
+)
+st.sidebar.write(f"Initial Capital: {INITIAL_CAPITAL:,} VND")
+
+MAX_POSITION_SIZE = st.sidebar.number_input(
+    "Max Position Size",
+    min_value=0,
+    value=100_000_000,
+    step=10_000_000,
+    format="%d"
+)
+st.sidebar.write(f"Max Position Size: {MAX_POSITION_SIZE:,} VND")
 
 start_date = st.sidebar.date_input(
     "Ngày bắt đầu backtest",
