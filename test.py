@@ -49,7 +49,7 @@ max_chase = st.sidebar.slider("Max chase limit (Chỉ vào khi không bị break
 target = st.sidebar.slider("Target (TP)", 1.0, 2.0, 1.4, step=0.05)
 stoploss = st.sidebar.slider("Stoploss (SL)", 0.8, 1.0, 0.95, step=0.01)
 min_hold_days = st.sidebar.number_input("Min hold days (Thị trường là T+2, số ngày hold tối thiếu)", value=14)
-max_hold_days = st.sidebar.number_input("Max hold days (quá số ngày này sẽ tự động chốt)", value=25)
+max_hold_days = st.sidebar.number_input("Max hold days (quá số ngày này sẽ tự động chốt)", value=10000)
 avoid_duplicate = st.sidebar.number_input("Avoid duplicate days (sau khi vào 1 lệnh thì cách ra để tránh lặp lại) ", value=10)
 
 BACKTEST_CONFIG = {
