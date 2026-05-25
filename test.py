@@ -6,12 +6,6 @@ from datetime import date
 import io
 
 st.set_page_config(page_title="Backtest Strategy System", layout="wide")
-
-# =========================
-# TITLE
-# =========================
-st.title("📈 Hệ thống Backtest Chiến lược Giao dịch")
-
 # =========================
 # FILE UPLOADER
 # =========================
