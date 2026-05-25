@@ -13,6 +13,16 @@ MAX_POSITION_SIZE = 100_000_000
 
 # Giao diện cho phép tinh chỉnh Parameter (giữ default y hệt Colab)
 st.sidebar.header("⚙️ Cấu hình Backtest")
+
+start_date = st.sidebar.date_input("Ngày bắt đầu backtest", value=pd.to_datetime("2000-01-01"))
+end_date = st.sidebar.date_input("Ngày kết thúc backtest", value=pd.to_datetime("today"))
+start_date = pd.to_datetime(start_date)
+end_date = pd.to_datetime(end_date)
+
+if start_date >= end_date:
+    st.error("Ngày bắt đầu phải nhỏ hơn ngày kết thúc")
+    st.stop()
+
 nen_tich_luy = st.sidebar.slider("Nền tích lũy max (%)", 0.01, 0.10, 0.04, step=0.01)
 min_days = st.sidebar.number_input("Số ngày tích lũy tối thiểu", value=4)
 max_days = st.sidebar.number_input("Số ngày tích lũy tối đa", value=9)
@@ -139,7 +149,8 @@ def run_backtest(df, stock_name, nen_tich_luy, so_ngay_tich_luy, breakout_days_c
     return pd.DataFrame(trades)
 
 # ==================== LOGIC ĐỌC FILE & LÀM SẠCH ====================
-def read_stock_file(file_wrapper):
+# def read_stock_file(file_wrapper):
+def read_stock_file(file_wrapper, start_date, end_date):
     df = pd.read_csv(file_wrapper)
     df = df.rename(columns={
         "Ngày": "Date", "Lần cuối": "Close", "Mở": "Open",
@@ -165,6 +176,14 @@ def read_stock_file(file_wrapper):
     df.set_index('Date', inplace=True)
     df['EMA21'] = df['Close'].ewm(span=21, adjust=False).mean()
     df['EMA65'] = df['Close'].ewm(span=65, adjust=False).mean()
+
+    effective_start = max(start_date, df.index.min())
+
+    df = df[
+        (df.index >= effective_start) &
+        (df.index <= end_date)
+    ]
+    
     return df
 
 # ==================== LOGIC TÍNH TOÁN THỐNG KÊ CHI TIẾT ====================
@@ -214,7 +233,8 @@ if uploaded_files:
         try:
             stock_name = file.name.replace(".csv", "")
             # Đọc trực tiếp từ BytesIO buffer của streamlit uploader
-            df = read_stock_file(file)
+            # df = read_stock_file(file)
+            df = read_stock_file(file, start_date, end_date)
             trades_df = run_backtest(df, stock_name, **BACKTEST_CONFIG)
             
             if len(trades_df) > 0:
