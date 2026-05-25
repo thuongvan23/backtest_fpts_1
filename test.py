@@ -48,8 +48,8 @@ st.sidebar.caption(f"≈ {MAX_POSITION_SIZE:,.0f} đ")
 start_date = st.sidebar.date_input("Ngày bắt đầu backtest", value=pd.to_datetime("2000-01-01"))
 end_date = st.sidebar.date_input("Ngày kết thúc backtest", value=pd.to_datetime("today"))
 
-# start_date = pd.to_datetime(start_date)
-# end_date = pd.to_datetime(end_date)
+start_date = pd.to_datetime(start_date)
+end_date = pd.to_datetime(end_date)
 
 if start_date >= end_date:
     st.error("Ngày bắt đầu phải nhỏ hơn ngày kết thúc")
