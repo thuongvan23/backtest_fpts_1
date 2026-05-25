@@ -22,6 +22,7 @@ INITIAL_CAPITAL = st.sidebar.number_input(
     value=500_000_000,
     step=50_000_000
 )
+st.sidebar.caption(f"≈ {INITIAL_CAPITAL:,.0f} đ")
 
 MAX_POSITION_SIZE = st.sidebar.number_input(
     "Kích thước vị thế tối đa (Max Position Size)",
@@ -29,7 +30,7 @@ MAX_POSITION_SIZE = st.sidebar.number_input(
     value=50_000_000,
     step=10_000_000
 )
-st.sidebar.caption(f"≈ {INITIAL_CAPITAL:,.0f} đ")
+st.sidebar.caption(f"≈ {MAX_POSITION_SIZE:,.0f} đ")
 
 start_date = st.sidebar.date_input(
     "Ngày bắt đầu backtest",
@@ -37,7 +38,6 @@ start_date = st.sidebar.date_input(
     min_value=date(1990, 1, 1),
     max_value=date.today()
 )
-st.sidebar.caption(f"≈ {MAX_POSITION_SIZE:,.0f} đ")
 
 end_date = st.sidebar.date_input(
     "Ngày kết thúc backtest",
