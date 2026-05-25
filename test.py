@@ -51,9 +51,9 @@ end_date = st.sidebar.date_input("Ngày kết thúc backtest", value=pd.to_datet
 start_date = pd.to_datetime(start_date)
 end_date = pd.to_datetime(end_date)
 
-if start_date >= end_date:
-    st.error("Ngày bắt đầu phải nhỏ hơn ngày kết thúc")
-    st.stop()
+# if start_date >= end_date:
+#     st.error("Ngày bắt đầu phải nhỏ hơn ngày kết thúc")
+#     st.stop()
 
 nen_tich_luy = st.sidebar.slider("Nền tích lũy max (%)", 0.01, 0.10, 0.04, step=0.01)
 min_days = st.sidebar.number_input("Số ngày tích lũy tối thiểu", value=4)
