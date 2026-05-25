@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 # import mplfinance as mpf
+from datetime import date
 import io
 
 st.set_page_config(page_title="Backtest Strategy System", layout="wide")
@@ -16,6 +17,20 @@ st.sidebar.header("⚙️ Cấu hình Backtest")
 
 start_date = st.sidebar.date_input("Ngày bắt đầu backtest", value=pd.to_datetime("2000-01-01"))
 end_date = st.sidebar.date_input("Ngày kết thúc backtest", value=pd.to_datetime("today"))
+start_date = st.sidebar.date_input(
+    "Ngày bắt đầu backtest",
+    value=date(2000, 1, 1),
+    min_value=date(1990, 1, 1),
+    max_value=date.today()
+)
+
+end_date = st.sidebar.date_input(
+    "Ngày kết thúc backtest",
+    value=date.today(),
+    min_value=date(1990, 1, 1),
+    max_value=date.today()
+)
+
 start_date = pd.to_datetime(start_date)
 end_date = pd.to_datetime(end_date)
 
@@ -177,12 +192,12 @@ def read_stock_file(file_wrapper, start_date, end_date):
     df['EMA21'] = df['Close'].ewm(span=21, adjust=False).mean()
     df['EMA65'] = df['Close'].ewm(span=65, adjust=False).mean()
 
-    effective_start = max(start_date, df.index.min())
+    # effective_start = max(start_date, df.index.min())
 
-    df = df[
-        (df.index >= effective_start) &
-        (df.index <= end_date)
-    ]
+    # df = df[
+    #     (df.index >= effective_start) &
+    #     (df.index <= end_date)
+    # ]
     
     return df
 
@@ -236,6 +251,12 @@ if uploaded_files:
             # df = read_stock_file(file)
             df = read_stock_file(file, start_date, end_date)
             trades_df = run_backtest(df, stock_name, **BACKTEST_CONFIG)
+
+            # Chỉ giữ lệnh nằm trong khoảng thời gian thống kê
+            trades_df = trades_df[
+                (trades_df['Buy Date'] >= start_date) &
+                (trades_df['Buy Date'] <= end_date)
+            ]
             
             if len(trades_df) > 0:
                 all_trades.append(trades_df)
