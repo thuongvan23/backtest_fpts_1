@@ -184,6 +184,7 @@ def read_stock_file(file_wrapper, start_date, end_date):
 
     def clean_volume(x):
         x = str(x).strip()
+        if 'B' in x: return float(x.replace('K', '')) * 1_000_000_000
         if 'M' in x: return float(x.replace('M', '')) * 1_000_000
         if 'K' in x: return float(x.replace('K', '')) * 1_000
         return float(x)
