@@ -15,8 +15,6 @@ MAX_POSITION_SIZE = 100_000_000
 # Giao diện cho phép tinh chỉnh Parameter (giữ default y hệt Colab)
 st.sidebar.header("⚙️ Cấu hình Backtest")
 
-start_date = st.sidebar.date_input("Ngày bắt đầu backtest", value=pd.to_datetime("2000-01-01"))
-end_date = st.sidebar.date_input("Ngày kết thúc backtest", value=pd.to_datetime("today"))
 start_date = st.sidebar.date_input(
     "Ngày bắt đầu backtest",
     value=date(2000, 1, 1),
