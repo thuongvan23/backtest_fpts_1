@@ -9,8 +9,8 @@ import io
 st.set_page_config(page_title="Backtest Strategy System", layout="wide")
 
 # --- KHỞI TẠO CẤU HÌNH & HẰNG SỐ CHUẨN TỪ COLAB ---
-# INITIAL_CAPITAL = 500_000_000
-# MAX_POSITION_SIZE = 100_000_000
+INITIAL_CAPITAL = 500_000_000
+MAX_POSITION_SIZE = 100_000_000
 
 # Giao diện cho phép tinh chỉnh Parameter (giữ default y hệt Colab)
 st.sidebar.header("⚙️ Cấu hình Backtest")
