@@ -8,8 +8,8 @@ import io
 st.set_page_config(page_title="Backtest Strategy System", layout="wide")
 
 # --- KHỞI TẠO CẤU HÌNH & HẰNG SỐ CHUẨN TỪ COLAB ---
-INITIAL_CAPITAL = 500_000_000
-MAX_POSITION_SIZE = 100_000_000
+# INITIAL_CAPITAL = 500_000_000
+# MAX_POSITION_SIZE = 100_000_000
 
 # Giao diện cho phép tinh chỉnh Parameter (giữ default y hệt Colab)
 st.sidebar.header("⚙️ Cấu hình Backtest")
@@ -22,6 +22,22 @@ end_date = pd.to_datetime(end_date)
 if start_date >= end_date:
     st.error("Ngày bắt đầu phải nhỏ hơn ngày kết thúc")
     st.stop()
+
+INITIAL_CAPITAL = st.sidebar.number_input(
+    "Vốn ban đầu",
+    min_value=100_000_000,
+    value=500_000_000,
+    step=100_000_000,
+    format="%d"
+)
+
+MAX_POSITION_SIZE = st.sidebar.number_input(
+    "Kích thước lệnh tối đa",
+    min_value=1_000_000,
+    value=50_000_000,
+    step=10_000_000,
+    format="%d"
+)
 
 nen_tich_luy = st.sidebar.slider("Nền tích lũy max (%)", 0.01, 0.10, 0.04, step=0.01)
 min_days = st.sidebar.number_input("Số ngày tích lũy tối thiểu", value=4)
