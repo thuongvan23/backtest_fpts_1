@@ -2,51 +2,134 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-# import mplfinance as mpf
 from datetime import date
 import io
 
 st.set_page_config(page_title="Backtest Strategy System", layout="wide")
 
-# --- KHỞI TẠO CẤU HÌNH & HẰNG SỐ CHUẨN TỪ COLAB ---
-# INITIAL_CAPITAL = 500_000_000
-# MAX_POSITION_SIZE = 100_000_000
+# =========================
+# TITLE
+# =========================
+st.title("📈 Hệ thống Backtest Chiến lược Giao dịch")
 
-# Giao diện cho phép tinh chỉnh Parameter (giữ default y hệt Colab)
-st.sidebar.header("⚙️ Cấu hình Backtest")
-
-INITIAL_CAPITAL = st.sidebar.number_input(
-    "Initial Capital",
-    min_value=0,
-    value=500_000_000,
-    step=100_000_000,
-    format="%d"
-)
-st.sidebar.write(f"Initial Capital: {INITIAL_CAPITAL:,} VND")
-
-MAX_POSITION_SIZE = st.sidebar.number_input(
-    "Max Position Size",
-    min_value=0,
-    value=100_000_000,
-    step=10_000_000,
-    format="%d"
-)
-st.sidebar.write(f"Max Position Size: {MAX_POSITION_SIZE:,} VND")
-
-start_date = st.sidebar.date_input(
-    "Ngày bắt đầu backtest",
-    value=date(2000, 1, 1),
-    min_value=date(1990, 1, 1),
-    max_value=date.today()
+# =========================
+# FILE UPLOADER
+# =========================
+uploaded_files = st.file_uploader(
+    "Tải lên các file dữ liệu cổ phiếu (CSV)",
+    accept_multiple_files=True,
+    type=['csv']
 )
 
-end_date = st.sidebar.date_input(
-    "Ngày kết thúc backtest",
-    value=date.today(),
-    min_value=date(1990, 1, 1),
-    max_value=date.today()
-)
+# =========================
+# SIDEBAR CONFIG FORM
+# =========================
+with st.sidebar.form("config_form"):
 
+    st.header("⚙️ Cấu hình Backtest")
+
+    INITIAL_CAPITAL = st.number_input(
+        "Initial Capital",
+        min_value=0,
+        value=500_000_000,
+        step=100_000_000,
+        format="%d"
+    )
+
+    st.write(f"Initial Capital: {INITIAL_CAPITAL:,} VND")
+
+    MAX_POSITION_SIZE = st.number_input(
+        "Max Position Size",
+        min_value=0,
+        value=100_000_000,
+        step=10_000_000,
+        format="%d"
+    )
+
+    st.write(f"Max Position Size: {MAX_POSITION_SIZE:,} VND")
+
+    start_date = st.date_input(
+        "Ngày bắt đầu backtest",
+        value=date(2000, 1, 1),
+        min_value=date(1990, 1, 1),
+        max_value=date.today()
+    )
+
+    end_date = st.date_input(
+        "Ngày kết thúc backtest",
+        value=date.today(),
+        min_value=date(1990, 1, 1),
+        max_value=date.today()
+    )
+
+    nen_tich_luy = st.slider(
+        "Nền tích lũy max (%)",
+        0.01,
+        0.10,
+        0.04,
+        step=0.01
+    )
+
+    min_days = st.number_input(
+        "Số ngày tích lũy tối thiểu",
+        value=4
+    )
+
+    max_days = st.number_input(
+        "Số ngày tích lũy tối đa",
+        value=9
+    )
+
+    breakout_days_check = st.number_input(
+        "Breakout days check",
+        value=3
+    )
+
+    max_chase = st.slider(
+        "Max chase limit (Chỉ vào khi không bị break quá cao)",
+        1.0,
+        1.1,
+        1.04,
+        step=0.01
+    )
+
+    target = st.slider(
+        "Target (TP)",
+        1.0,
+        2.0,
+        1.4,
+        step=0.05
+    )
+
+    stoploss = st.slider(
+        "Stoploss (SL)",
+        0.8,
+        1.0,
+        0.95,
+        step=0.01
+    )
+
+    min_hold_days = st.number_input(
+        "Min hold days (Thị trường là T+2, số ngày hold tối thiếu)",
+        value=14
+    )
+
+    max_hold_days = st.number_input(
+        "Max hold days (quá số ngày này sẽ tự động chốt)",
+        value=10000
+    )
+
+    avoid_duplicate = st.number_input(
+        "Avoid duplicate days (sau khi vào 1 lệnh thì cách ra để tránh lặp lại)",
+        value=10
+    )
+
+    # BUTTON RUN
+    run_backtest_button = st.form_submit_button("🚀 RUN BACKTEST")
+
+# =========================
+# VALIDATE DATE
+# =========================
 start_date = pd.to_datetime(start_date)
 end_date = pd.to_datetime(end_date)
 
@@ -54,18 +137,10 @@ if start_date >= end_date:
     st.error("Ngày bắt đầu phải nhỏ hơn ngày kết thúc")
     st.stop()
 
-nen_tich_luy = st.sidebar.slider("Nền tích lũy max (%)", 0.01, 0.10, 0.04, step=0.01)
-min_days = st.sidebar.number_input("Số ngày tích lũy tối thiểu", value=4)
-max_days = st.sidebar.number_input("Số ngày tích lũy tối đa", value=9)
+# =========================
+# CONFIG
+# =========================
 so_ngay_tich_luy = range(int(min_days), int(max_days) + 1)
-
-breakout_days_check = st.sidebar.number_input("Breakout days check", value=3)
-max_chase = st.sidebar.slider("Max chase limit (Chỉ vào khi không bị break quá cao)", 1.0, 1.1, 1.04, step=0.01)
-target = st.sidebar.slider("Target (TP)", 1.0, 2.0, 1.4, step=0.05)
-stoploss = st.sidebar.slider("Stoploss (SL)", 0.8, 1.0, 0.95, step=0.01)
-min_hold_days = st.sidebar.number_input("Min hold days (Thị trường là T+2, số ngày hold tối thiếu)", value=14)
-max_hold_days = st.sidebar.number_input("Max hold days (quá số ngày này sẽ tự động chốt)", value=10000)
-avoid_duplicate = st.sidebar.number_input("Avoid duplicate days (sau khi vào 1 lệnh thì cách ra để tránh lặp lại) ", value=10)
 
 BACKTEST_CONFIG = {
     "nen_tich_luy": nen_tich_luy,
@@ -207,13 +282,6 @@ def read_stock_file(file_wrapper, start_date, end_date):
     df.set_index('Date', inplace=True)
     df['EMA21'] = df['Close'].ewm(span=21, adjust=False).mean()
     df['EMA65'] = df['Close'].ewm(span=65, adjust=False).mean()
-
-    # effective_start = max(start_date, df.index.min())
-
-    # df = df[
-    #     (df.index >= effective_start) &
-    #     (df.index <= end_date)
-    # ]
     
     return df
 
@@ -252,9 +320,10 @@ def calculate_statistics(trades_df):
 # ==================== GIAO DIỆN CHÍNH STREAMLIT ====================
 st.title("📈 Hệ thống Backtest Chiến lược Giao dịch")
 
-uploaded_files = st.file_uploader("Tải lên các file dữ liệu cổ phiếu (CSV)", accept_multiple_files=True, type=['csv'])
+if run_backtest_button and not uploaded_files:
+    st.warning("Vui lòng upload file CSV")
 
-if uploaded_files:
+elif run_backtest_button and uploaded_files:
     summary_results = []
     all_trades = []
     
@@ -384,20 +453,7 @@ if uploaded_files:
             st.pyplot(fig4)
             plt.close(fig4)
 
-        # ==================== LOGIC BACKTEST QUẢN LÝ VỐN (KHỚP CHUẨN COLAB 100%) ====================
-        # st.header("💰 QUẢN LÝ VỐN DANH MỤC (PORTFOLIO BACKTEST LOOP)")
-        
-        # cash = INITIAL_CAPITAL
-        # open_positions = []
-        # executed_trades = []
-
-        # # Sắp xếp theo Buy Date bằng thuật toán ổn định 'mergesort' để bảo lưu trật tự quét file gốc
-        # df_loop = df_stats.copy()
-        # df_loop = df_loop.sort_values(by='Buy Date', kind='mergesort').reset_index(drop=True)
-
-        # for idx, row in df_loop.iterrows():
-        #     buy_date = row['Buy Date']
-        # ==================== LOGIC BACKTEST QUẢN LÝ VỐN (KHỚP CHUẨN COLAB 100%) ====================
+        # ==================== LOGIC BACKTEST QUẢN LÝ VỐN ====================
         st.header("💰 QUẢN LÝ VỐN DANH MỤC (PORTFOLIO BACKTEST LOOP)")
         
         cash = INITIAL_CAPITAL
