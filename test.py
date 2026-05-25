@@ -243,7 +243,7 @@ if uploaded_files:
             # Đọc trực tiếp từ BytesIO buffer của streamlit uploader
             # df = read_stock_file(file)
             df, remaining_warmup = read_stock_file(file, start_date, end_date)
-            trades_df = run_backtest(df, stock_name, **BACKTEST_CONFIG)
+            trades_df = run_backtest(df, stock_name, remaining_warmup=remaining_warmup, **BACKTEST_CONFIG)
             
             if len(trades_df) > 0:
                 all_trades.append(trades_df)
