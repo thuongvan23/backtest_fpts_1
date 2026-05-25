@@ -3,58 +3,25 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 # import mplfinance as mpf
-from datetime import date
 import io
 
 st.set_page_config(page_title="Backtest Strategy System", layout="wide")
 
 # --- KHỞI TẠO CẤU HÌNH & HẰNG SỐ CHUẨN TỪ COLAB ---
-# INITIAL_CAPITAL = 500_000_000
-# MAX_POSITION_SIZE = 100_000_000
+INITIAL_CAPITAL = 500_000_000
+MAX_POSITION_SIZE = 100_000_000
 
 # Giao diện cho phép tinh chỉnh Parameter (giữ default y hệt Colab)
 st.sidebar.header("⚙️ Cấu hình Backtest")
 
-start_date = st.sidebar.date_input(
-    "Ngày bắt đầu backtest",
-    value=date(2000, 1, 1),
-    min_value=date(1990, 1, 1),
-    max_value=date.today()
-)
-
-end_date = st.sidebar.date_input(
-    "Ngày kết thúc backtest",
-    value=date.today(),
-    min_value=date(1990, 1, 1),
-    max_value=date.today()
-)
-
+start_date = st.sidebar.date_input("Ngày bắt đầu backtest", value=pd.to_datetime("2000-01-01"))
+end_date = st.sidebar.date_input("Ngày kết thúc backtest", value=pd.to_datetime("today"))
 start_date = pd.to_datetime(start_date)
 end_date = pd.to_datetime(end_date)
 
 if start_date >= end_date:
     st.error("Ngày bắt đầu phải nhỏ hơn ngày kết thúc")
     st.stop()
-
-INITIAL_CAPITAL = st.sidebar.number_input(
-    "Vốn ban đầu",
-    min_value=100_000_000,
-    value=500_000_000,
-    step=100_000_000,
-    format="%d"
-)
-
-st.sidebar.caption(f"💰 {INITIAL_CAPITAL:,.0f} đ")
-
-MAX_POSITION_SIZE = st.sidebar.number_input(
-    "Kích thước lệnh tối đa",
-    min_value=1_000_000,
-    value=50_000_000,
-    step=10_000_000,
-    format="%d"
-)
-
-st.sidebar.caption(f"📦 {MAX_POSITION_SIZE:,.0f} đ")
 
 nen_tich_luy = st.sidebar.slider("Nền tích lũy max (%)", 0.01, 0.10, 0.04, step=0.01)
 min_days = st.sidebar.number_input("Số ngày tích lũy tối thiểu", value=4)
@@ -66,7 +33,7 @@ max_chase = st.sidebar.slider("Max chase limit (Chỉ vào khi không bị break
 target = st.sidebar.slider("Target (TP)", 1.0, 2.0, 1.4, step=0.05)
 stoploss = st.sidebar.slider("Stoploss (SL)", 0.8, 1.0, 0.95, step=0.01)
 min_hold_days = st.sidebar.number_input("Min hold days (Thị trường là T+2, số ngày hold tối thiếu)", value=14)
-max_hold_days = st.sidebar.number_input("Max hold days (quá số ngày này sẽ tự động chốt)", value=10000)
+max_hold_days = st.sidebar.number_input("Max hold days (quá số ngày này sẽ tự động chốt)", value=25)
 avoid_duplicate = st.sidebar.number_input("Avoid duplicate days (sau khi vào 1 lệnh thì cách ra để tránh lặp lại) ", value=10)
 
 BACKTEST_CONFIG = {
@@ -83,15 +50,11 @@ BACKTEST_CONFIG = {
 
 # ==================== LOGIC HÀM BACKTEST ====================
 def run_backtest(df, stock_name, nen_tich_luy, so_ngay_tich_luy, breakout_days_check, 
-                 max_chase, target, stoploss, min_hold_days, max_hold_days, avoid_duplicate, remaining_warmup):
+                 max_chase, target, stoploss, min_hold_days, max_hold_days, avoid_duplicate):
     trades = []
     last_breakout_idx = -1
 
-    # Không đủ dữ liệu sau warmup
-    if remaining_warmup >= len(df):
-        return pd.DataFrame()
-                     
-    for i in range(remaining_warmup, len(df)):
+    for i in range(80, len(df)):
         if i <= last_breakout_idx:
             continue
         if df['EMA21'].iloc[i] <= df['EMA65'].iloc[i]:
@@ -201,7 +164,6 @@ def read_stock_file(file_wrapper, start_date, end_date):
 
     def clean_volume(x):
         x = str(x).strip()
-        if 'B' in x: return float(x.replace('B', '')) * 1_000_000_000
         if 'M' in x: return float(x.replace('M', '')) * 1_000_000
         if 'K' in x: return float(x.replace('K', '')) * 1_000
         return float(x)
@@ -214,19 +176,15 @@ def read_stock_file(file_wrapper, start_date, end_date):
     df.set_index('Date', inplace=True)
     df['EMA21'] = df['Close'].ewm(span=21, adjust=False).mean()
     df['EMA65'] = df['Close'].ewm(span=65, adjust=False).mean()
-    
-    effective_start = max(start_date, df.index.min())
 
-    EMA_WARMUP = 80
-    history_bars = len(df[df.index < effective_start])
-    remaining_warmup = max(0, EMA_WARMUP - history_bars)
+    effective_start = max(start_date, df.index.min())
 
     df = df[
         (df.index >= effective_start) &
         (df.index <= end_date)
     ]
     
-    return df, remaining_warmup
+    return df
 
 # ==================== LOGIC TÍNH TOÁN THỐNG KÊ CHI TIẾT ====================
 def calculate_statistics(trades_df):
@@ -276,8 +234,8 @@ if uploaded_files:
             stock_name = file.name.replace(".csv", "")
             # Đọc trực tiếp từ BytesIO buffer của streamlit uploader
             # df = read_stock_file(file)
-            df, remaining_warmup = read_stock_file(file, start_date, end_date)
-            trades_df = run_backtest(df, stock_name, remaining_warmup=remaining_warmup, **BACKTEST_CONFIG)
+            df = read_stock_file(file, start_date, end_date)
+            trades_df = run_backtest(df, stock_name, **BACKTEST_CONFIG)
             
             if len(trades_df) > 0:
                 all_trades.append(trades_df)
