@@ -9,27 +9,11 @@ import io
 st.set_page_config(page_title="Backtest Strategy System", layout="wide")
 
 # --- KHỞI TẠO CẤU HÌNH & HẰNG SỐ CHUẨN TỪ COLAB ---
-# INITIAL_CAPITAL = 500_000_000
-# MAX_POSITION_SIZE = 100_000_000
+INITIAL_CAPITAL = 500_000_000
+MAX_POSITION_SIZE = 100_000_000
 
 # Giao diện cho phép tinh chỉnh Parameter (giữ default y hệt Colab)
 st.sidebar.header("⚙️ Cấu hình Backtest")
-
-# --- CẤU HÌNH VỐN ---
-INITIAL_CAPITAL = st.sidebar.number_input(
-    "Vốn ban đầu (Initial Capital)",
-    min_value=100_000_000,
-    value=500_000_000,
-    step=50_000_000
-)
-
-MAX_POSITION_SIZE = st.sidebar.number_input(
-    "Kích thước vị thế tối đa (Max Position Size)",
-    min_value=10_000_000,
-    value=50_000_000,
-    step=10_000_000
-)
-st.sidebar.caption(f"≈ {INITIAL_CAPITAL:,.0f} đ")
 
 start_date = st.sidebar.date_input(
     "Ngày bắt đầu backtest",
@@ -37,7 +21,6 @@ start_date = st.sidebar.date_input(
     min_value=date(1990, 1, 1),
     max_value=date.today()
 )
-st.sidebar.caption(f"≈ {MAX_POSITION_SIZE:,.0f} đ")
 
 end_date = st.sidebar.date_input(
     "Ngày kết thúc backtest",
@@ -63,10 +46,7 @@ max_chase = st.sidebar.slider("Max chase limit (Chỉ vào khi không bị break
 target = st.sidebar.slider("Target (TP)", 1.0, 2.0, 1.4, step=0.05)
 stoploss = st.sidebar.slider("Stoploss (SL)", 0.8, 1.0, 0.95, step=0.01)
 min_hold_days = st.sidebar.number_input("Min hold days (Thị trường là T+2, số ngày hold tối thiếu)", value=14)
-max_hold_days = st.sidebar.number_input("Max hold days (quá số ngày này sẽ tự động chốt)", value=25)
-if min_hold_days > max_hold_days:
-    st.error("Min hold days phải nhỏ hơn hoặc bằng Max hold days")
-    st.stop()
+max_hold_days = st.sidebar.number_input("Max hold days (quá số ngày này sẽ tự động chốt)", value=10000)
 avoid_duplicate = st.sidebar.number_input("Avoid duplicate days (sau khi vào 1 lệnh thì cách ra để tránh lặp lại) ", value=10)
 
 BACKTEST_CONFIG = {
