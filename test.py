@@ -50,11 +50,15 @@ BACKTEST_CONFIG = {
 
 # ==================== LOGIC HÀM BACKTEST ====================
 def run_backtest(df, stock_name, nen_tich_luy, so_ngay_tich_luy, breakout_days_check, 
-                 max_chase, target, stoploss, min_hold_days, max_hold_days, avoid_duplicate):
+                 max_chase, target, stoploss, min_hold_days, max_hold_days, avoid_duplicate, remaining_warmup):
     trades = []
     last_breakout_idx = -1
 
-    for i in range(80, len(df)):
+    # Không đủ dữ liệu sau warmup
+    if remaining_warmup >= len(df):
+        return pd.DataFrame()
+                     
+    for i in range(remaining_warmup, len(df)):
         if i <= last_breakout_idx:
             continue
         if df['EMA21'].iloc[i] <= df['EMA65'].iloc[i]:
@@ -176,15 +180,19 @@ def read_stock_file(file_wrapper, start_date, end_date):
     df.set_index('Date', inplace=True)
     df['EMA21'] = df['Close'].ewm(span=21, adjust=False).mean()
     df['EMA65'] = df['Close'].ewm(span=65, adjust=False).mean()
-
+    
     effective_start = max(start_date, df.index.min())
+
+    EMA_WARMUP = 80
+    history_bars = len(df[df.index < effective_start])
+    remaining_warmup = max(0, EMA_WARMUP - history_bars)
 
     df = df[
         (df.index >= effective_start) &
         (df.index <= end_date)
     ]
     
-    return df
+    return df, remaining_warmup
 
 # ==================== LOGIC TÍNH TOÁN THỐNG KÊ CHI TIẾT ====================
 def calculate_statistics(trades_df):
@@ -234,7 +242,7 @@ if uploaded_files:
             stock_name = file.name.replace(".csv", "")
             # Đọc trực tiếp từ BytesIO buffer của streamlit uploader
             # df = read_stock_file(file)
-            df = read_stock_file(file, start_date, end_date)
+            df, remaining_warmup = read_stock_file(file, start_date, end_date)
             trades_df = run_backtest(df, stock_name, **BACKTEST_CONFIG)
             
             if len(trades_df) > 0:
