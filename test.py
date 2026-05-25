@@ -31,6 +31,8 @@ INITIAL_CAPITAL = st.sidebar.number_input(
     format="%d"
 )
 
+st.sidebar.caption(f"💰 {INITIAL_CAPITAL:,.0f} đ")
+
 MAX_POSITION_SIZE = st.sidebar.number_input(
     "Kích thước lệnh tối đa",
     min_value=1_000_000,
@@ -38,6 +40,8 @@ MAX_POSITION_SIZE = st.sidebar.number_input(
     step=10_000_000,
     format="%d"
 )
+
+st.sidebar.caption(f"📦 {MAX_POSITION_SIZE:,.0f} đ")
 
 nen_tich_luy = st.sidebar.slider("Nền tích lũy max (%)", 0.01, 0.10, 0.04, step=0.01)
 min_days = st.sidebar.number_input("Số ngày tích lũy tối thiểu", value=4)
