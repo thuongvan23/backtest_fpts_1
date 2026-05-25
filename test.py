@@ -170,7 +170,8 @@ def read_stock_file(file_wrapper):
 # ==================== LOGIC TÍNH TOÁN THỐNG KÊ CHI TIẾT ====================
 def calculate_statistics(trades_df):
     if len(trades_df) == 0: return None
-    closed_trades = trades_df[trades_df['Result'].isin(['TAKE_PROFIT', 'STOPLOSS'])].copy()
+    # closed_trades = trades_df[trades_df['Result'].isin(['TAKE_PROFIT', 'STOPLOSS'])].copy()
+    closed_trades = trades_df.copy()
     if len(closed_trades) == 0: return None
 
     closed_trades['Return %'] = ((closed_trades['Exit Price'] - closed_trades['Buy Price']) / closed_trades['Buy Price']) * 100
