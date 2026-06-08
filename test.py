@@ -207,8 +207,8 @@ def run_backtest(df, stock_name, nen_tich_luy, so_ngay_tich_luy, breakout_days_c
                     # Stoploss ưu tiên trước
                     if row['Low'] <= sl:
                         result = "STOPLOSS"
-                        # exit_price = sl
-                        exit_price = min(row['Open'], sl)
+                        exit_price = sl
+                        # exit_price = min(row['Open'], sl)
                         exit_date = future.index[j]
                         break
                     
