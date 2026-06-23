@@ -76,7 +76,7 @@ with st.sidebar.form("config_form"):
 
     breakout_days_check = st.number_input(
         "Breakout days check",
-        value=3
+        value=1
     )
 
     max_chase = st.slider(
@@ -110,7 +110,7 @@ with st.sidebar.form("config_form"):
 
     max_hold_days = st.number_input(
         "Max hold days (quá số ngày này sẽ tự động chốt)",
-        value=10000
+        value=65
     )
 
     avoid_duplicate = st.number_input(
